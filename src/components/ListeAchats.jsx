@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { supprimerAchat } from '../redux/actions/achatActions';
+import { supprimerAchat, filtrerAchats } from '../redux/actions/achatActions';
 
-const ListeAchats = () => {
+function ListeAchats  ()  {
+  const [filtreClient, setFiltreClient] = useState('');
   const achats = useSelector(state => state.achats);
+  const achatsFilters = useSelector(state => state.achatsFilters);
   const produits = useSelector(state => state.produits);
   const dispatch = useDispatch();
 
@@ -11,13 +13,34 @@ const ListeAchats = () => {
     dispatch(supprimerAchat(numero));
   };
 
+  const handleFiltrer = () => {
+    dispatch(filtrerAchats(filtreClient));
+  };
+
   const getProduitDetails = (codeProduit) => {
     return produits.find(produit => produit.codeProduit === codeProduit) || {};
   };
 
+  const achatsToDisplay = achatsFilters.length > 0 ? achatsFilters : achats;
+
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Liste des achats</h2>
+      <div className="mb-4 flex">
+        <input
+          type="text"
+          value={filtreClient}
+          onChange={(e) => setFiltreClient(e.target.value)}
+          placeholder="Numéro du client"
+          className="mr-2 p-2 border rounded"
+        />
+        <button
+          onClick={handleFiltrer}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Filtrer
+        </button>
+      </div>
       <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -31,7 +54,7 @@ const ListeAchats = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {achats.map(achat => {
+            {achatsToDisplay.map(achat => {
               const produit = getProduitDetails(achat.codeProduit);
               const total = produit.prix * achat.qte;
               return (
